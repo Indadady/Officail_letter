@@ -55,6 +55,9 @@
         :root { --navy: #004098; --teal: #0A7A6E; --bg: #F4F7F6; --slate: #4A6278; }
         body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg); color: #1e293b; overflow: hidden; }
 
+        /* 🔥 CSS 우선순위 버그 해결: 수신함 하단 겹침 방지 */
+        .hidden { display: none !important; }
+
         .admin-nav { position: relative; height: 60px; background: var(--navy); color: white; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .nav-tabs { display: flex; height: 100%; gap: 4px; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;}
         .nav-tabs::-webkit-scrollbar { display: none; }
@@ -116,7 +119,7 @@
         .left-panel::-webkit-scrollbar-thumb, .right-panel::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 5px; border: 2px solid #e2e8f0; }
         .left-panel::-webkit-scrollbar-thumb:hover, .right-panel::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-        #letter-wrapper { display: block; width: 100%; text-align: center; }
+        #letter-wrapper { width: 100%; text-align: center; }
         .letter-container { margin: 0 auto; }
         #viewer-banner { margin: 0 auto 16px auto; }
 
@@ -231,8 +234,7 @@
         </div>
         <div class="flex gap-2 shrink-0">
             <button class="share-btn admin-only" onclick="window.copyShareLink()"><i class="fa-solid fa-link"></i> 링크 배포</button>
-            <!-- 관리자 모드와 뷰어 모드에서 항상 노출되는 인쇄 버튼 -->
-            <button class="share-btn bg-slate-700 hover:bg-slate-800 admin-only" id="global-print-btn" onclick="window.print()"><i class="fa-solid fa-print"></i> PDF/인쇄</button>
+            <button class="share-btn bg-slate-700 hover:bg-slate-800 admin-only hidden" id="global-print-btn" onclick="window.print()"><i class="fa-solid fa-print"></i> PDF/인쇄</button>
         </div>
     </nav>
 
@@ -250,7 +252,7 @@
                     <p>• 문서의 규격(로고, 발신/수신처, 서명 등)은 유지됩니다.<br>• 고객은 내용 수정 없이 <b>직인</b>만 추가하여 제출할 수 있습니다.</p>
                     
                     <button onclick="window.resetRichText()" class="mt-4 bg-white border border-blue-300 text-blue-700 font-bold py-2 px-4 rounded hover:bg-blue-100 transition text-xs flex items-center gap-1">
-                        <i class="fas fa-undo"></i> 본문 기본 뼈대로 초기화
+                        <i class="fas fa-undo"></i> 본문 기본 뼈대 및 캐시 초기화
                     </button>
                 </div>
 
@@ -517,11 +519,12 @@
         };
 
         window.resetRichText = function() {
-            if(confirm("작성하신 본문 내용이 모두 지워지고 초기 뼈대 양식으로 되돌아갑니다. 계속하시겠습니까?")) {
+            if(confirm("작성하신 본문 내용이 모두 지워지고 초기 뼈대 양식으로 되돌아갑니다. 직인 이미지도 초기화됩니다. 계속하시겠습니까?")) {
                 appData.letterBodyHtml = defaultSkeleton;
+                appData.stampDataUrl = ""; // 기존 캐시된 도장 이미지도 함께 날리기
                 window.syncDOMWithState();
                 try { localStorage.setItem(`tm_letter_data_${currentEventId}`, JSON.stringify(appData)); } catch(e){}
-                window.showToast("기본 뼈대로 초기화되었습니다.");
+                window.showToast("기본 뼈대 및 캐시가 모두 초기화되었습니다.");
             }
         };
 
